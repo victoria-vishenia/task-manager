@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Task's List</title>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+<h1>Task's list</h1>
+<table id="table">
+  <thead>
+  <tr>
+    <th>Id</th>
+    <th>Description</th>
+    <th>DeadLine</th>
+    <th>Status</th>
+    <th>Level</th>
+    <th><a href=/employees/>Employees</a></th>
+  </tr>
+  </thead>
+  <tbody>
+  <tr th:each="task : ${tasks}" id="rows">
+    <td th:text="${task.id}"></td>
+    <td th:text="${task.description}"></td>
+    <td th:text="${task.deadline}"></td>
+    <td th:text="${task.status}"></td>
+    <td th:text="${task.level}"></td>
+    <td>
+      <span th:text="${task.getEmployee() != null ? task.getEmployee().getName() : 'Нет сотрудника'}"></span>
+      <span class="employee-id" data-employee-id=""></span>
+    </td>
+    <td>
+      <button th:id="'edit_' + ${task.id}" th:onclick="'edit_task('+${task.id} +')'">Edit</button>
+    </td>
+    <td>
+      <button th:id="'delete_' + ${task.id}" th:onclick="'delete_task('+${task.id} +')'">Delete</button>
+    </td>
+  </tr>
+  <tr>
+
+    <td>
+      <input type='text' id='id_new' value=''>
+    </td>
+    <td>
+      <input type='text' id='description_new' value=''>
+    </td>
+    <td>
+      <input id='deadline_new' type='date' value=''>
+    </td>
+    <td>
+      <label for='status_new'></label>
+      <select id='status_new' >
+        <option value='IN_PROGRESS'>IN_PROGRESS</option>
+        <option value='DONE'>DONE</option>
+        <option value='PAUSED'>PAUSED</option>
+      </select>
+    </td>
+    <td>
+      <label for='level_new'></label>
+      <select id='level_new'>
+        <option value='OPTIONAL'>OPTIONAL</option>
+        <option value='HAS_TIME'>HAS_TIME</option>
+        <option value='BURNING'>BURNING</option>
+        <option value='URGENTLY'>URGENTLY</option>
+      </select>
+    </td>
+
+    <td>
+      <label for="employeeId_new">Выберите сотрудника:</label>
+      <select id="employeeId_new" name="employeeId">
+        <option value=0>Нет сотрудника</option>
+        <option th:each="employee1 : ${employees}"  th:value="${employee1.id}" th:text="${employee1.name}"></option>
+      </select>
+    </td>
+    <td>
+      <button id='save_new' onclick='add_task()'>Save</button>
+    </td>
+  </tr>
+  </tbody>
+</table>
+
+<script>
+
+  function delete_task(task_id) {
+    let url = "/tasks/" + task_id;
+    $.ajax({
+      url: url,
+      type: 'DELETE',
+      success: function () {
+        window.location.reload();
+      }
+    });
+  }
+
+  function edit_task(task_id) {
+    let identifier_delete = "#delete_" + task_id;
+    $(identifier_delete).remove();
+
+    let identifier_edit = "#edit_" + task_id;
+    let save_tag = "<button id='save_" + task_id + "'>Save</button>";
+    $(identifier_edit).html(save_tag);
+    let property_save_tag = "update_task(" + task_id + ")";
+    $(identifier_edit).attr("onclick", property_save_tag);
+
+    let current_tr_element = $(identifier_edit).parent().parent();
+    let children =$(current_tr_element).children();
+
+    let td_description=children[1];
+    td_description.innerHTML = "<input id='input_description_" + task_id +
+            "' type='text' value='" + td_description.innerHTML + "'>";
+
+    let td_deadline=children[2];
+    td_deadline.innerHTML = "<input id='input_deadline_" + task_id +
+            "' type='date' value='" + td_deadline.innerHTML + "'>";
+
+    let td_status = children[3];
+    let status_id = "#select_status_" + task_id;
+    let status_current_value = td_status.innerHTML;
+    td_status.innerHTML = getStatusHTML(task_id);
+    $(status_id).val(status_current_value).change();
+
+    let td_level = children[4];
+    let level_id = "#select_level_" + task_id;
+    let level_current_value = td_level.innerHTML;
+    td_level.innerHTML = getLevelHTML(task_id);
+    $(level_id).val(level_current_value).change();
+
+    let td_employeeId = children[5];
+    let employeeId = td_employeeId.querySelector('.employee-id').getAttribute('data-employee-id');
+    td_employeeId.querySelector('.employee-id').setAttribute('data-employee-id', employeeId);
+    td_employeeId.innerHTML = "<input id='input_employeeId_" + task_id +
+            "' type='text' value='" + employeeId + "'placeholder='Введите id работника'>";
+
+  }
+
+  function getStatusHTML(task_id) {
+    let status_id = "select_status_" + task_id;
+    return "<label for='status'></label>"
+            + "<select id=" + status_id + " name='status'>"
+            +"<option value='IN_PROGRESS'>IN_PROGRESS</option>"
+            + "<option value='DONE'>DONE</option>"
+            +"<option value='PAUSED'>PAUSED</option>"
+            +"</select>";
+  }
+
+  function getLevelHTML(task_id) {
+    let level_id = "select_level_" + task_id;
+    return "<label for='level'></label>"
+            + "<select id=" + level_id + " name='level'>"
+            +"<option value='OPTIONAL'>OPTIONAL</option>"
+            + "<option value='HAS_TIME'>HAS_TIME</option>"
+            +"<option value='BURNING'>BURNING</option>"
+            + "<option value='URGENTLY'>URGENTLY</option>"
+            +"</select>";
+  }
+
+  function update_task(task_id) {
+
+    let value_description = $("#input_description_" + task_id).val();
+    let value_deadline = $("#input_deadline_" + task_id).val();
+    let value_status = $("#select_status_" + task_id).val();
+    let value_level = $("#select_level_" + task_id).val();
+    let value_employeeId = $("#input_employeeId_" + task_id).val();
+    // значение employeeId - часть пути url,и он должен передаваться конкретным значением даже,
+    // если не введен специально
+    if (!value_employeeId) {
+      let primaryElement = document.getElementById("employeeId_new");
+      let primaryValue = primaryElement.value;
+      value_employeeId = primaryValue;
+    }
+    let url = "/tasks/edit/" + task_id + "/" + value_employeeId;
+
+    $.ajax({
+      url: url,
+      type: 'POST',
+      dataType: 'json',
+      contentType: 'application/json;charset=UTF-8',
+      async:false,
+      data: JSON.stringify({"description":value_description, "deadline":value_deadline,
+        "status":value_status, "level":value_level, "employeeId": value_employeeId})
+    });
+
+    setTimeout(() => {
+      document.location.reload();
+    }, 300);
+
+    console.log(url);
+    console.log(value_employeeId);
+  }
+
+  function add_task(){
+    let value_id = $('#id_new').val();
+    let value_description = $('#description_new').val();
+    let value_deadline = $("#deadline_new").val();
+    let value_status = $("#status_new").val();
+    let value_level = $("#level_new").val();
+    let value_employeeId = $("#employeeId_new").val();
+
+    $.ajax({
+      url: "/tasks/add/" + value_employeeId,
+      type: 'POST',
+      dataType: 'json',
+      contentType: 'application/json;charset=UTF-8',
+      async: false,
+      data: JSON.stringify({"description":value_description, "deadline":value_deadline,
+        "status":value_status, "level":value_level, "employeeId": value_employeeId})
+    });
+
+    setTimeout(() => {
+      document.location.reload();
+    }, 300);
+  }
+</script>
+
+</body>
+<style>
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    border: 2px solid black;
+  }
+  table, th, td {
+    text-align: center;
+    border: 2px solid black;
+    padding: 8px;
+  }
+</style>
+</html>

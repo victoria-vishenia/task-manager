@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Employee's List</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+</head>
+<body>
+<h1>Employee's list</h1>
+<table>
+    <thead>
+    <tr>
+        <th>Id</th>
+        <th>Name</th>
+        <th>Position</th>
+        <th>Gender</th>
+        <th>Birthday</th>
+        <th><a href=/tasks/>Tasks</a></th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="employee : ${employees}" id="rows">
+        <td th:text="${employee.id}"></td>
+        <td th:text="${employee.name}"></td>
+        <td th:text="${employee.position}"></td>
+        <td th:text="${employee.gender}"></td>
+        <td th:text="${employee.birthday}"></td>
+        <td id="selectedTasksTd">
+    <span th:each="task, iterStat : ${employee.employeesTasks}" >
+        <span th:value="${task.id}" th:text="${task.description}"></span>
+        <span th:if="${!iterStat.last}">, </span>
+    </span>
+        </td>
+        <td>
+            <button th:id="'edit_' + ${employee.id}" th:onclick="'edit_employee('+${employee.id}+')'">Edit</button>
+        </td>
+        <td>
+            <button th:id="'delete_' + ${employee.id}" th:onclick="'delete_employee('+${employee.id} +')'">Delete</button>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <input type='text' id='id_new' value=''>
+        </td>
+        <td>
+            <input type='text' id='name_new' value=''>
+        </td>
+        <td>
+            <label for='position_new'></label>
+            <select id='position_new' >
+                <option value='DIRECTOR'>DIRECTOR</option>
+                <option value='MANAGER'>MANAGER</option>
+                <option value='TRAINEE'>TRAINEE</option>
+                <option value='ACCOUNTANT'>ACCOUNTANT</option>
+                <option value='LAWYER'>LAWYER</option>
+            </select>
+        </td>
+        <td>
+            <input type='date' id='birthday_new' value=''>
+        </td>
+        <td>
+            <label for='gender_new'></label>
+            <select id='gender_new'>
+                <option value='MALE'>MALE</option>
+                <option value='FEMALE'>FEMALE</option>
+            </select>
+        </td>
+        <td>
+            <label for="tasks_new">Tasks:</label>
+            <ul id="tasks_new">
+                <th:block th:each="task : ${tasks}">
+                    <li>
+                        <input type="checkbox" th:id="'task' + ${task.id}" name="taskIds" th:value="${task.id}"/>
+                        <label th:for="'task' + ${task.id}" th:text="${task.description}"></label>
+                    </li>
+                </th:block>
+            </ul>
+        </td>
+        <td>
+            <button id='save_new' onclick='add_employee()'>Save</button>
+        </td>
+    </tr>
+    </tbody>
+</table>
+
+<script th:inline="javascript">
+    let tasksIds = /*[[${tasksIds}]]*/ [];
+</script>
+
+<script>
+    function delete_employee(employee_id) {
+        let url = "/employees/" + employee_id;
+        $.ajax({
+            url: url,
+            type: 'DELETE',
+            success: function () {
+                window.location.reload();
+            }
+        });
+    }
+
+    function edit_employee(employee_id) {
+        let identifier_delete = '#delete_' + employee_id;
+        $(identifier_delete).remove();
+
+        let identifier_edit = "#edit_" + employee_id;
+        let save_tag = "<button id='save_" + employee_id + "'>Save</button>";
+        $(identifier_edit).html(save_tag);
+        let property_save_tag = "update_employee(" + employee_id + ")";
+        $(identifier_edit).attr("onclick", property_save_tag);
+
+        let current_tr_element = $(identifier_edit).parent().parent();
+        let children = $(current_tr_element).children();
+
+        let td_name = children[1];
+        td_name.innerHTML = "<input id='input_name_" + employee_id +
+            "' type='text' value='" + td_name.innerHTML + "'>";
+
+        let td_position = children[2];
+        let position_id = "#select_position_" + employee_id;
+        let position_current_value = td_position.innerHTML;
+        td_position.innerHTML = getPositionHTML(employee_id);
+        $(position_id).val(position_current_value).change();
+
+        let td_gender = children[3];
+        let gender_id = "#select_gender_" + employee_id;
+        let gender_current_value = td_gender.innerHTML;
+        td_gender.innerHTML = getGenderHTML(employee_id);
+        $(gender_id).val(gender_current_value).change();
+
+        let td_birthday = children[4];
+        td_birthday.innerHTML = "<input id='input_birthday_" + employee_id +
+            "' type='date' value='" + td_birthday.innerHTML + "'>";
+
+        let td_tasks = children[5];
+        // Очистите текущий список задач, если он существует
+        //  let taskList = document.getElementById("selectedTasksTd");
+        while (td_tasks.firstChild) {
+            td_tasks.removeChild(td_tasks.firstChild);
+        }
+
+        // Добавьте чекбоксы для каждой задачи
+        tasksIds.forEach(function(taskId) {
+            const checkbox = document.createElement("input");
+            checkbox.type = "checkbox";
+            checkbox.name = "taskIds";
+            checkbox.value = taskId;
+
+            const label = document.createElement("label");
+            label.htmlFor = "task" + taskId;
+            label.innerText = "Choose task with Id №" + taskId;
+
+            const listItem = document.createElement("li");
+            listItem.appendChild(checkbox);
+            listItem.appendChild(label);
+            td_tasks.appendChild(listItem);
+        });
+    }
+
+    function getPositionHTML(employee_id) {
+        let position_id = "select_position_" + employee_id;
+        return "<label for='position'></label>"
+            + "<select id=" + position_id + " name='position'>"
+            +"<option value='DIRECTOR'>DIRECTOR</option>"
+            + "<option value='MANAGER'>MANAGER</option>"
+            +"<option value='TRAINEE'>TRAINEE</option>"
+            + "<option value='ACCOUNTANT'>ACCOUNTANT</option>"
+            +"<option value='LAWYER'>LAWYER</option>"
+            +"</select>";
+    }
+
+    function getGenderHTML(employee_id) {
+        let gender_id = "select_gender_" + employee_id;
+        return "<label for='gender'></label>"
+            + "<select id=" + gender_id + " name='gender'>"
+            +"<option value='MALE'>MALE</option>"
+            + "<option value='FEMALE'>FEMALE</option>"
+            +"</select>";
+    }
+
+    function update_employee(employee_id) {
+        let value_name = $('#input_name_' + employee_id).val();
+        let value_position = $("#select_position_" + employee_id).val();
+        let value_birthday = $("#input_birthday_" + employee_id).val();
+        let value_gender = $("#select_gender_" + employee_id).val();
+        let selectedTasks = [];
+        $("input[name='taskIds']:checked").each(function () {
+            selectedTasks.push($(this).val());
+        });
+        $("#selectedTasksTd").html(selectedTasks.join(', '));
+
+        let url = "/employees/" + employee_id;
+
+        $.ajax({
+            url: url,
+            type: 'POST',
+            dataType: 'json',
+            contentType: 'application/json;charset=UTF-8',
+            async:false,
+            data: JSON.stringify({"name":value_name, "position":value_position,
+                "birthday":value_birthday, "gender":value_gender, "tasksIds":selectedTasks})
+        });
+
+        setTimeout(() => {
+            document.location.reload();
+        }, 1000);
+
+    }
+
+    function add_employee(){
+        let value_name = $('#name_new').val();
+        let value_position = $("#position_new").val();
+        let value_birthday = $("#birthday_new").val();
+        let value_gender = $("#gender_new").val();
+        let selectedTasks = [];
+        $("input[name='taskIds']:checked").each(function () {
+            selectedTasks.push($(this).val());
+        });
+        $("#selectedTasksTd").html(selectedTasks.join(', '));
+
+        $.ajax({
+            url: "/employees/",
+            type: 'POST',
+            dataType: 'json',
+            contentType: 'application/json;charset=UTF-8',
+            async: false,
+            data: JSON.stringify({"name":value_name, "position":value_position,
+                "birthday":value_birthday, "gender":value_gender, "tasksIds": selectedTasks})
+        });
+
+        setTimeout(() => {
+            document.location.reload();
+        }, 1000);
+
+        console.log(selectedTasks);
+    }
+</script>
+
+</body>
+<style>
+    table {
+        border-collapse: collapse;
+        width: 100%;
+        border: 2px solid black;
+    }
+    table, th, td {
+        text-align: center;
+        border: 2px solid black;
+        padding: 8px;
+    }
+</style>
+</html>
