@@ -22,6 +22,7 @@ CREATE TABLE IF NOT EXISTS Task (
                                     CONSTRAINT fk_employee_id FOREIGN KEY (employee_id) REFERENCES Employee(id)
 );
 
+
 insert into task_list.employee(id, name, position, birthday, gender)
 VALUES (1,'Leon', 1, '1989-11-12', 0 ),
        (2,'Alph', 0, '1989-11-12', 0),
