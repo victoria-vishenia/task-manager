@@ -18,5 +18,5 @@ After starting the project, application will be able accordingly via the links h
 
 ![Employee accounting management form](https://github.com/victoria-vishenia/Pet-project/blob/master/Employees.jpg)https://github.com/victoria-vishenia/Pet-project/blob/master/Employees.jpg)
 
-![Task accounting management form]([ссылка_на_изображение](https://github.com/victoria-vishenia/Pet-project/blob/master/Tasks.jpg)https://github.com/victoria-vishenia/Pet-project/blob/master/Tasks.jpg)
+![Task accounting management form](https://github.com/victoria-vishenia/Pet-project/blob/master/Tasks.jpg)https://github.com/victoria-vishenia/Pet-project/blob/master/Tasks.jpg)
 
