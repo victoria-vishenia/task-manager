@@ -36,8 +36,7 @@ public class TaskController {
             throw new RuntimeException("Invalid id");
         }
 
-        Task task = taskService
-                .editTask(employeeId, id, taskInfo.getDescription(),
+         taskService.editTask(employeeId, id, taskInfo.getDescription(),
                         taskInfo.getStatus(), taskInfo.getLevel(),
                         taskInfo.getDeadline());
 
@@ -48,7 +47,7 @@ public class TaskController {
                           @PathVariable Long employeeId,
                           @RequestBody TaskInfo taskInfo){
 
-        Task task= taskService.createTask(employeeId, taskInfo.getId(), taskInfo.getDescription(),
+        taskService.createTask(employeeId, taskInfo.getId(), taskInfo.getDescription(),
                 taskInfo.getStatus(), taskInfo.getLevel(), taskInfo.getDeadline());
 
         return getAllTasks(model);

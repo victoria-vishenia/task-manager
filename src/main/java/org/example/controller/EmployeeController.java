@@ -29,7 +29,7 @@ public class EmployeeController{
         model.addAttribute("tasksIds", tasksIds);
         return "employees";
     }
-    @PostMapping("/employees/{id}")
+    @PostMapping("/employees/edit/{id}")
     public String editEmployee(Model model,
                                @PathVariable Long id,
                                @RequestBody EmployeeInfo employeeInfo){
@@ -42,15 +42,14 @@ public class EmployeeController{
                         employeeInfo.getPosition(),  employeeInfo.getBirthday(),
                         employeeInfo.getGender(),
                         employeeInfo.getTasksIds());
-        employee.setEmployeesTasks(employeeInfo.getTaskList());
 
         return getAllEmployees(model);
     }
-    @PostMapping("/employees/")
+    @PostMapping("/employees/add/")
     public String addEmployee(Model model,
                               @RequestBody EmployeeInfo employeeInfo){
 
-        Employee employee= employeeService.createEmployee(employeeInfo.getId(), employeeInfo.getName(),
+        employeeService.createEmployee(employeeInfo.getId(), employeeInfo.getName(),
                 employeeInfo.getPosition(), employeeInfo.getBirthday(), employeeInfo.getGender(),
                 employeeInfo.getTasksIds());
 

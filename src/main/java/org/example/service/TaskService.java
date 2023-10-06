@@ -5,9 +5,7 @@ import org.example.repo.EmployeeRepository;
 import org.example.repo.TaskRepository;
 import org.example.domain.Level;
 import org.example.domain.Task;
-import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
@@ -17,7 +15,6 @@ import java.util.Optional;
 
 
 @Service
-@EnableTransactionManagement
 public class TaskService {
     private final TaskRepository taskRepository;
     private final EmployeeRepository employeeRepository;
@@ -57,40 +54,37 @@ public class TaskService {
 
         Task newTask = new Task();
 
-        LocalDate localDateNow = LocalDate.now();
-        if (deadline.isBefore(localDateNow)) {
-            throw new RuntimeException("Impossible finish task in the past");
+        if (deadline == null) {
+            newTask.setDeadline(null);
         } else {
-            newTask.setId(taskId);
-            newTask.setDescription(description);
-            newTask.setStatus(status);
-            newTask.setLevel(level);
-            newTask.setDeadline(deadline);
+            LocalDate localDateNow = LocalDate.now();
+            if (deadline.isBefore(localDateNow)) {
+                throw new RuntimeException("Impossible finish task in the past");
+            } else {
+                newTask.setId(taskId);
+                newTask.setDescription(description);
+                newTask.setStatus(status);
+                newTask.setLevel(level);
+                newTask.setDeadline(deadline);
 
-            if (employeeId == null) {
-                newTask.setEmployee(null);
-            } else if (employeeRepository.existsById(employeeId)) {
-                Employee employee = employeeRepository.findById(employeeId).get();
-                newTask.setEmployee(employee);
-                employee.addTask(newTask);
+                if (employeeId == null) {
+                    newTask.setEmployee(null);
+                } else if (employeeRepository.existsById(employeeId)) {
+                    Employee employee = employeeRepository.findById(employeeId).get();
+                    newTask.setEmployee(employee);
+                    employee.addTask(newTask);
+                }
+                taskRepository.save(newTask);
             }
-
-            taskRepository.save(newTask);
-            return newTask;
         }
+        return newTask;
     }
 
     @Transactional
     public Task editTask(Long employeeId, Long taskId, String description,
                          Status status, Level level,
                          LocalDate deadline) {
-        Task task = null;
-        try {
-            task = taskRepository.findById(taskId)
-                    .orElseThrow(ChangeSetPersister.NotFoundException::new);
-        } catch (ChangeSetPersister.NotFoundException e) {
-            throw new RuntimeException(e);
-        }
+        Task task = taskRepository.findById(taskId).get();
 
         task.setDescription(description);
         task.setStatus(status);

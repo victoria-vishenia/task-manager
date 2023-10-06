@@ -6,7 +6,7 @@
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
-<h1>Task's list</h1>
+<h1>Tasks</h1>
 <table id="table">
   <thead>
   <tr>
@@ -26,7 +26,7 @@
     <td th:text="${task.status}"></td>
     <td th:text="${task.level}"></td>
     <td>
-      <span th:text="${task.getEmployee() != null ? task.getEmployee().getName() : 'Нет сотрудника'}"></span>
+      <span th:text="${task.getEmployee() != null ? task.getEmployee().getName() : 'Not assigned'}"></span>
       <span class="employee-id" data-employee-id=""></span>
     </td>
     <td>

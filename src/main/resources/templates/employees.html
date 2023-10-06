@@ -7,7 +7,7 @@
 
 </head>
 <body>
-<h1>Employee's list</h1>
+<h1>Employees</h1>
 <table>
     <thead>
     <tr>
@@ -190,7 +190,7 @@
         });
         $("#selectedTasksTd").html(selectedTasks.join(', '));
 
-        let url = "/employees/" + employee_id;
+        let url = "/employees/" + "edit/" + employee_id;
 
         $.ajax({
             url: url,
@@ -220,7 +220,7 @@
         $("#selectedTasksTd").html(selectedTasks.join(', '));
 
         $.ajax({
-            url: "/employees/",
+            url: "/employees/add/",
             type: 'POST',
             dataType: 'json',
             contentType: 'application/json;charset=UTF-8',

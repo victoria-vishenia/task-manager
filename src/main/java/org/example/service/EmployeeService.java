@@ -1,9 +1,7 @@
 package org.example.service;
 import org.example.domain.*;
 import org.example.repo.EmployeeRepository;
-import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
@@ -15,10 +13,10 @@ import java.util.Optional;
 import static java.util.Objects.isNull;
 
 @Service
-@EnableTransactionManagement
 public class EmployeeService {
     private final EmployeeRepository employeeRepository;
     private final TaskService taskService;
+
     public EmployeeService(EmployeeRepository employeeRepository,
                            TaskService taskService) {
         this.employeeRepository = employeeRepository;
@@ -33,50 +31,53 @@ public class EmployeeService {
 
         Employee newEmployee = new Employee();
 
-        LocalDate localDateNow = LocalDate.now();
-        Period ageDifference = birthday.until(localDateNow);
-        int years = ageDifference.getYears();
-        if (years < 18) {
-            throw new RuntimeException("Too young person for this job.");
+        if (birthday == null) {
+            newEmployee.setBirthday(null);
         } else {
-            newEmployee.setId(employeeId);
-            newEmployee.setName(name);
-            newEmployee.setPosition(position);
-            newEmployee.setGender(gender);
-            newEmployee.setBirthday(birthday);
-
-            return editTasksForEditedEmployee(taskIds, newEmployee);
+            LocalDate localDateNow = LocalDate.now();
+            Period ageDifference = birthday.until(localDateNow);
+            int years = ageDifference.getYears();
+            if (years < 18) {
+                throw new RuntimeException("Too young person for this job.");
+            } else {
+                newEmployee.setId(employeeId);
+                newEmployee.setName(name);
+                newEmployee.setPosition(position);
+                newEmployee.setGender(gender);
+                newEmployee.setBirthday(birthday);
+            }
         }
+        return editTasksForEditedEmployee(taskIds, newEmployee);
     }
+
     @Transactional
     public Employee editEmployee(Long employeeId, String name, Position position,
                                  LocalDate birthday, Gender gender, List <Long> taskIds) {
-        Employee employee = null;
-        try {
-            employee = employeeRepository.findById(employeeId)
-                    .orElseThrow(ChangeSetPersister.NotFoundException::new);
-        } catch (ChangeSetPersister.NotFoundException e) {
-            throw new RuntimeException(e);
-        }
+        Employee employee = employeeRepository.findById(employeeId).get();
 
-        LocalDate localDateNow = LocalDate.now();
-        Period ageDifference = birthday.until(localDateNow);
-        int years = ageDifference.getYears();
-        if (years < 18) {
-            throw new RuntimeException("Too young person for this job.");
+        if (birthday == null) {
+            employee.setBirthday(null);
         } else {
-            employee.setName(name);
-            employee.setPosition(position);
-            employee.setBirthday(birthday);
-            employee.setGender(gender);
+            LocalDate localDateNow = LocalDate.now();
+            Period ageDifference = birthday.until(localDateNow);
+            int years = ageDifference.getYears();
 
-            return editTasksForEditedEmployee(taskIds, employee);
+            if (years < 18) {
+                throw new RuntimeException("Too young person for this job.You can't hire a child");
+            } else {
+                employee.setName(name);
+                employee.setPosition(position);
+                employee.setBirthday(birthday);
+                employee.setGender(gender);
+            }
         }
+        return editTasksForEditedEmployee(taskIds, employee);
     }
+
     private Employee editTasksForEditedEmployee(List<Long> taskIds, Employee employee) {
+
         if (taskIds!=null) {
             List<Task> selectedTasks = taskService.getTasksByIds(taskIds);
-
             List <Task> actualTasks = new ArrayList<>();
 
             for (Task task : selectedTasks) {
@@ -96,8 +97,8 @@ public class EmployeeService {
     @Transactional
     public void deleteEmployee(Long id) {
         Optional<Employee> employee = employeeRepository.findById(id);
-
         Employee employee1 = employee.get();
+
         if (isNull(employee1)) {
             throw new RuntimeException("Employee not exist");
         } else {
