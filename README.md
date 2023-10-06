@@ -14,7 +14,7 @@ The application is developed using Spring Boot, Spring MVC, JavaScript, HTML/CSS
 
 To access the database, use the file application.properties.
 To create databases and fill them, you need to run the init.sql script
-After starting the project, application will be able accordingly via the links http://ipaddress:port/employees (for example http://localhost:8080/employees) and http://ipaddress:port/tasks (for example http ://localhost:8080/tasks).
+After starting the project, application will be able accordingly via the links http://ipaddress:port/employees (for example http://localhost:8080/employees/) and http://ipaddress:port/tasks (for example http ://localhost:8080/tasks/).
 
 ![Employee accounting management form](https://github.com/victoria-vishenia/Pet-project/blob/master/Employees.jpg)https://github.com/victoria-vishenia/Pet-project/blob/master/Employees.jpg)
 
