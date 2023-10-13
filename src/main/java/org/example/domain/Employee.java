@@ -16,7 +16,7 @@ public class Employee {
     private LocalDate birthday;
     @Enumerated(EnumType.ORDINAL)
     private Gender gender;
-    @OneToMany(mappedBy = "employee", cascade =  CascadeType.DETACH, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "employee",  fetch = FetchType.EAGER)
     private List<Task> employeesTasks = new ArrayList<>();
 
     public Long getId() {
