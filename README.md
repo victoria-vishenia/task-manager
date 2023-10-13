@@ -8,7 +8,7 @@ In the application you can create a new employees' note and new tasks' note, del
 
 **Tools**
 
-The application is developed using Spring Boot, Spring MVC, JavaScript, HTML/CSS, Thymeleaf, MySQL.
+The application is developed using Spring Boot, Spring MVC, Spring Boot Test, JavaScript, HTML/CSS, Thymeleaf, MySQL.
 
 **User instruction**
 
